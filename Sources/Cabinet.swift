@@ -140,34 +140,20 @@ public extension Cabinet {
             ]
             NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [managedObjectContext])
             
-//            if I.entityName == "Sale" {
-//                let childFetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Line")
-//                childFetchRequest.predicate = NSPredicate(format: "sale IN %@", ids)
-//
-//                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest as! NSFetchRequest<NSFetchRequestResult>)
-//                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
-//
-//                let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
-//                let childChanges: [AnyHashable: Any] = [
-//                    NSDeletedObjectsKey: childResult.result as! [NSManagedObjectID]
-//                ]
-//
-//                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
-//            }
-//            if I.entityName == "Sale" {
-//                let childFetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Payment")
-//                childFetchRequest.predicate = NSPredicate(format: "sale IN %@", ids)
-//
-//                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest as! NSFetchRequest<NSFetchRequestResult>)
-//                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
-//
-//                let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
-//                let childChanges: [AnyHashable: Any] = [
-//                    NSDeletedObjectsKey: childResult.result as! [NSManagedObjectID]
-//                ]
-//
-//                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
-//            }
+            try I.cascades.forEach { cascade in
+                let childFetchRequest = NSFetchRequest<NSManagedObject>(entityName: cascade)
+                childFetchRequest.predicate = NSPredicate(format: "%K IN %@", I.foreignKey, ids)
+
+                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest as! NSFetchRequest<NSFetchRequestResult>)
+                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
+
+                let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
+                let childChanges: [AnyHashable: Any] = [
+                    NSDeletedObjectsKey: childResult.result as! [NSManagedObjectID]
+                ]
+
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
+            }
             
             self.save(completion)
         } catch {

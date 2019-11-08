@@ -12,7 +12,9 @@ import CoreData
 public protocol Storable: Identifiable {
     
     static var entityName: String { get }
-            
+    static var cascades: [String] { get }
+    static var foreignKey: String { get }
+    
     var id: UUID { get set }
     
     static func from(object: NSManagedObject) -> Self?
