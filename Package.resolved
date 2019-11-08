@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Lumber",
+        "repositoryURL": "https://github.com/infinitetoken/Lumber",
+        "state": {
+          "branch": null,
+          "revision": "fc11cdba0ea5078da8f4d70de2048a195209fb0f",
+          "version": "2.5.0"
+        }
+      },
+      {
+        "package": "Pinball",
+        "repositoryURL": "https://github.com/infinitetoken/Pinball",
+        "state": {
+          "branch": null,
+          "revision": "d048fb2a20d322d70817b8ab47116d90a73faa88",
+          "version": "1.5.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
