@@ -1,3 +1,3 @@
 # Cabinet
 
-A description of this package.
+A lightweight wrapper for CoreData
