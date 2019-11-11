@@ -155,7 +155,7 @@ public extension Cabinet {
                 NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
             }
             
-            managedObjectContext.refreshAllObjects()
+            managedObjectContext.reset()
             
             self.save(completion)
         } catch {
