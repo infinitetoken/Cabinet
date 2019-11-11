@@ -127,11 +127,10 @@ public extension Cabinet {
             return object.id
         }
         
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: I.entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: I.entityName)
         fetchRequest.predicate = NSPredicate(format: "id IN %@", ids)
 
-        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest as! NSFetchRequest<NSFetchRequestResult>)
-        batchDeleteRequest.resultType = .resultTypeObjectIDs
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
         do {
             let result = try managedObjectContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
@@ -141,11 +140,10 @@ public extension Cabinet {
             NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [managedObjectContext])
             
             try I.cascades.forEach { cascade in
-                let childFetchRequest = NSFetchRequest<NSManagedObject>(entityName: cascade)
+                let childFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: cascade)
                 childFetchRequest.predicate = NSPredicate(format: "%K IN %@", I.foreignKey, ids)
 
-                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest as! NSFetchRequest<NSFetchRequestResult>)
-                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
+                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest)
 
                 let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
                 let childChanges: [AnyHashable: Any] = [
@@ -154,8 +152,6 @@ public extension Cabinet {
 
                 NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
             }
-            
-            managedObjectContext.reset()
             
             self.save(completion)
         } catch {
