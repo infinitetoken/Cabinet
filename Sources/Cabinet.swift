@@ -126,48 +126,39 @@ public extension Cabinet {
     func delete<I>(objects: [I], completion: @escaping (Result<Bool, Error>) -> Void) where I : Storable {
         let managedObjectContext = self.persistentContainer.viewContext
         
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: I.entityName)
-        fetchRequest.predicate = NSPredicate(format: "id IN %@", objects.map { $0.id })
-        
-        let asynchronousFetchRequest = NSAsynchronousFetchRequest(fetchRequest: fetchRequest) { (asynchronousFetchResult) in
-            guard let result = asynchronousFetchResult.finalResult else {
-                DispatchQueue.main.async { completion(.success(false)) }
-                return
-            }
-            
-            result.forEach { object in
-                I.cascades.forEach { cascade in
-                    let childFetchRequest = NSFetchRequest<NSManagedObject>(entityName: cascade)
-                    childFetchRequest.predicate = NSPredicate(format: "%K IN %@", I.foreignKey, objects.map { $0.id })
-                    
-                    let childAsynchronousFetchRequest = NSAsynchronousFetchRequest(fetchRequest: childFetchRequest) { (childAsynchronousFetchRequest) in
-                        guard let childResult = childAsynchronousFetchRequest.finalResult else {
-                            DispatchQueue.main.async { completion(.success(false)) }
-                            return
-                        }
-                        
-                        childResult.forEach { object in
-                            managedObjectContext.delete(object)
-                        }
-                    }
-                    
-                    do {
-                        try managedObjectContext.execute(childAsynchronousFetchRequest)
-                    } catch {
-                        completion(.failure(error))
-                    }
-                }
-                
-                managedObjectContext.delete(object)
-            }
-            
-            DispatchQueue.main.async {
-                self.save(completion)
-            }
+        let ids = objects.map { (object) -> UUID in
+            return object.id
         }
         
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: I.entityName)
+        fetchRequest.predicate = NSPredicate(format: "id IN %@", ids)
+
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        batchDeleteRequest.resultType = .resultTypeObjectIDs
+        
         do {
-            try managedObjectContext.execute(asynchronousFetchRequest)
+            let result = try managedObjectContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
+            let changes: [AnyHashable: Any] = [
+                NSDeletedObjectsKey: result.result as! [NSManagedObjectID]
+            ]
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [managedObjectContext])
+            
+            try I.cascades.forEach { cascade in
+                let childFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: cascade)
+                childFetchRequest.predicate = NSPredicate(format: "%K IN %@", I.foreignKey, ids)
+
+                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest)
+                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
+
+                let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
+                let childChanges: [AnyHashable: Any] = [
+                    NSDeletedObjectsKey: childResult.result as! [NSManagedObjectID]
+                ]
+
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
+            }
+            
+            self.save(completion)
         } catch {
             completion(.failure(error))
         }
