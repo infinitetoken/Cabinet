@@ -155,6 +155,8 @@ public extension Cabinet {
                 NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
             }
             
+            managedObjectContext.refreshAllObjects()
+            
             self.save(completion)
         } catch {
             completion(.failure(error))
@@ -162,7 +164,7 @@ public extension Cabinet {
     }
     
     func save(_ completion: @escaping (Result<Bool, Error>) -> Void) {
-        let context = persistentContainer.viewContext
+        let context = self.persistentContainer.viewContext
         if context.hasChanges {
             do {
                 try context.save()
