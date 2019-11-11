@@ -131,6 +131,7 @@ public extension Cabinet {
         fetchRequest.predicate = NSPredicate(format: "id IN %@", ids)
 
         let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        batchDeleteRequest.resultType = .resultTypeObjectIDs
         
         do {
             let result = try managedObjectContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
@@ -144,6 +145,7 @@ public extension Cabinet {
                 childFetchRequest.predicate = NSPredicate(format: "%K IN %@", I.foreignKey, ids)
 
                 let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest)
+                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
 
                 let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
                 let childChanges: [AnyHashable: Any] = [
