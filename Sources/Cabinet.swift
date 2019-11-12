@@ -91,7 +91,7 @@ public extension Cabinet {
     func insert<I>(object: I, completion: @escaping (Result<Bool, Error>) -> Void) where I : Storable {
         object.insert(context: self.persistentContainer.viewContext)
         
-        self.save(completion)
+        completion(.success(true))
     }
     
     func update<I>(objects: [I], completion: @escaping (Result<Bool, Error>) -> Void) where I : Storable {
@@ -112,8 +112,7 @@ public extension Cabinet {
                         objects.first { $0.id == id }?.update(object: object)
                     }
                 }
-                
-                self.save(completion)
+                completion(.success(true))
             }
         }
 
@@ -159,7 +158,7 @@ public extension Cabinet {
                 NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
             }
             
-            self.save(completion)
+            completion(.success(true))
         } catch {
             completion(.failure(error))
         }
