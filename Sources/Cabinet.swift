@@ -130,35 +130,25 @@ public extension Cabinet {
             return object.id
         }
         
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: I.entityName)
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: I.entityName)
         fetchRequest.predicate = NSPredicate(format: "id IN %@", ids)
 
-        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        batchDeleteRequest.resultType = .resultTypeObjectIDs
-        
-        do {
-            let result = try managedObjectContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
-            let changes: [AnyHashable: Any] = [
-                NSDeletedObjectsKey: result.result as! [NSManagedObjectID]
-            ]
-            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [managedObjectContext])
-            
-            try I.cascades.forEach { cascade in
-                let childFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: cascade)
-                childFetchRequest.predicate = NSPredicate(format: "%K IN %@", I.foreignKey, ids)
-
-                let childBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: childFetchRequest)
-                childBatchDeleteRequest.resultType = .resultTypeObjectIDs
-
-                let childResult = try managedObjectContext.execute(childBatchDeleteRequest) as! NSBatchDeleteResult
-                let childChanges: [AnyHashable: Any] = [
-                    NSDeletedObjectsKey: childResult.result as! [NSManagedObjectID]
-                ]
-
-                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: childChanges, into: [managedObjectContext])
+        let asynchronousFetchRequest = NSAsynchronousFetchRequest(fetchRequest: fetchRequest) { (asynchronousFetchResult) in
+            guard let result = asynchronousFetchResult.finalResult else {
+                DispatchQueue.main.async { completion(.success(false)) }
+                return
             }
-            
-            completion(.success(true))
+
+            DispatchQueue.main.async {
+                result.forEach { object in
+                    managedObjectContext.delete(object)
+                }
+                completion(.success(true))
+            }
+        }
+
+        do {
+            try managedObjectContext.execute(asynchronousFetchRequest)
         } catch {
             completion(.failure(error))
         }
