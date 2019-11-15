@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "Lumber",
-        "repositoryURL": "https://github.com/infinitetoken/Lumber",
+        "repositoryURL": "https://github.com/infinitetoken/Lumber-Swift",
         "state": {
           "branch": null,
-          "revision": "fc11cdba0ea5078da8f4d70de2048a195209fb0f",
-          "version": "2.5.0"
+          "revision": "a5a45027856e6c3c5dcdba678529e9416be169ce",
+          "version": "2.6.1"
         }
       },
       {

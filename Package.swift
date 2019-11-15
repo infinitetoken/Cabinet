@@ -17,7 +17,7 @@ let package = Package(
             targets: ["Cabinet"])
     ],
     dependencies: [
-        .package(url: "https://github.com/infinitetoken/Lumber", from: "2.0.0")
+        .package(url: "https://github.com/infinitetoken/Lumber-Swift", from: "2.0.0")
     ],
     targets: [
         .target(
