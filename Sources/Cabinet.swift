@@ -38,6 +38,9 @@ public class Cabinet: NSObject {
         container.viewContext.automaticallyMergesChangesFromParent = true
         
         do {
+            if let container = container as? NSPersistentCloudKitContainer, self.initializeSchema {
+                try container.initializeCloudKitSchema(options: self.initializeSchemaOptions)
+            }
             try container.viewContext.setQueryGenerationFrom(.current)
         } catch {
             fatalError("Failed to pin viewContext to the current generation: \(error)")
@@ -48,6 +51,8 @@ public class Cabinet: NSObject {
     
     public var containerName: String = "Database"
     public var usesCloudKit: Bool = false
+    public var initializeSchema: Bool = false
+    public var initializeSchemaOptions: NSPersistentCloudKitContainerSchemaInitializationOptions = []
     
     // MARK: - Lifecycle
     
