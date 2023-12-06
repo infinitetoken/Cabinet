@@ -19,7 +19,6 @@ let package = Package(
     targets: [
         .target(
             name: "Cabinet",
-            dependencies: ["Lumber"],
             path: "Sources"),
         .testTarget(
             name: "CabinetTests",
