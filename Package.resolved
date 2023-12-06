@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/infinitetoken/Lumber-Swift",
         "state": {
           "branch": null,
-          "revision": "a5a45027856e6c3c5dcdba678529e9416be169ce",
-          "version": "2.6.1"
+          "revision": "33f588d710efbeb5e11d052a33c8cf5f2a619150",
+          "version": "2.6.2"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/infinitetoken/Pinball",
         "state": {
           "branch": null,
-          "revision": "d048fb2a20d322d70817b8ab47116d90a73faa88",
-          "version": "1.5.0"
+          "revision": "0cc031441e5f11c24fb83fb08a551f6093357414",
+          "version": "1.3.0"
         }
       }
     ]
